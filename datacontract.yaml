@@ -1,0 +1,169 @@
+apiVersion: "v3.1.0"
+kind: "DataContract"
+id: "example-id"
+version: "0.0.1"
+status: "draft"
+name: "Example Data Contract"
+
+schema:
+  - id: "tbl_fornecedor"
+    name: "Fornecedor"
+    logicalType: "object"
+    physicalType: "table"
+    physicalName: "Fornecedor"
+    description: "Tabela de domínio que armazena os dados dos parceiros comerciais que fornecem os produtos da ZAGI."
+    tags:
+      - "catalogo"
+      - "parceiros"
+
+    properties:
+      - id: "forn_id_prop"
+        name: "FornID"
+        primaryKey: true
+        businessName: "ID do Fornecedor"
+        logicalType: "integer"
+        physicalType: "int"
+        required: true
+        relationships:
+          - type: "foreignKey"
+            to: "Produto.FornID"
+
+      - id: "forn_nome_prop"
+        name: "FornNome"
+        primaryKey: false
+        businessName: "Nome do Fornecedor"
+        logicalType: "string"
+        physicalType: "varchar(100)"
+        required: true
+        description: "Razão social ou nome fantasia do fornecedor parceiro."
+
+  - id: "tbl_categoria"
+    name: "Categoria"
+    logicalType: "object"
+    physicalType: "table"
+    physicalName: "Categoria"
+    description: "Tabela de domínio para classificação macro dos produtos vendidos pela ZAGI."
+    tags:
+      - "catalogo"
+      - "classificacao"
+
+    properties:
+      - id: "categ_id_prop"
+        name: "CategID"
+        primaryKey: true
+        primaryKeyPosition: 1
+        businessName: "ID da Categoria"
+        logicalType: "integer"
+        physicalType: "int"
+        required: true
+        description: "Identificador único da categoria."
+
+      - id: "categ_nome_prop"
+        name: "CategNome"
+        primaryKey: false
+        businessName: "Nome da Categoria"
+        logicalType: "string"
+        physicalType: "varchar(100)"
+        required: true
+        description: "Nomenclatura oficial da categoria (ex. Eletrônicos, Vestuário)."
+
+  - id: "tbl_produto"
+    name: "Produto"
+    logicalType: "object"
+    physicalType: "table"
+    physicalName: "Produto"
+    description: "Tabela central de catálogo contendo os produtos vendidos pela ZAGI, seus preços e categorização."
+    tags:
+      - "vendas"
+      - "estoque"
+      - "catalogo"
+
+    quality:
+      - type: "sql"
+        description: "Produtos não podem ser cadastrados com preço zero ou negativo."
+        query: |
+          SELECT COUNT(*)
+          FROM oper_zagi.Produto
+          WHERE ProdPreco::numeric < 0.01
+        mustBe: 0
+
+      - type: "sql"
+        description: "O fornecedor atribuído ao produto deve existir previamente na tabela de fornecedores."
+        query: |
+          SELECT COUNT(*)
+          FROM oper_zagi.Produto p
+          LEFT JOIN oper_zagi.Fornecedor f
+            ON p.FornID = f.FornID
+          WHERE f.FornID IS NULL
+        mustBe: 0
+
+      - type: "sql"
+        description: "A categoria atribuída ao produto deve existir previamente na tabela de categorias."
+        query: |
+          SELECT COUNT(*)
+          FROM oper_zagi.Produto p
+          LEFT JOIN oper_zagi.Categoria c
+            ON p.CategID = c.CategID
+          WHERE c.CategID IS NULL
+        mustBe: 0
+
+    properties:
+      - id: "prod_id_prop"
+        name: "ProdID"
+        primaryKey: true
+        primaryKeyPosition: 1
+        businessName: "ID do Produto"
+        logicalType: "integer"
+        physicalType: "int"
+        required: true
+        description: "Identificador único e sequencial do produto no sistema."
+
+      - id: "prod_nome_prop"
+        name: "ProdNome"
+        primaryKey: false
+        businessName: "Nome do Produto"
+        logicalType: "string"
+        physicalType: "varchar(100)"
+        required: true
+        description: "Nome comercial descritivo do produto apresentado ao cliente final."
+
+      - id: "prod_preco_prop"
+        name: "ProdPreco"
+        primaryKey: false
+        businessName: "Preço do Produto"
+        logicalType: "number"
+        physicalType: "money"
+        required: true
+        description: "Preço base de venda do produto, sem aplicação de descontos de PDV."
+
+      - id: "forn_id_prop_fk"
+        name: "FornID"
+        primaryKey: false
+        businessName: "ID do Fornecedor Relacionado"
+        logicalType: "integer"
+        physicalType: "int"
+        required: true
+        description: "Chave estrangeira referenciando Fornecedor.FornID."
+
+      - id: "categ_id_prop_fk"
+        name: "CategID"
+        primaryKey: false
+        businessName: "ID da Categoria Relacionada"
+        logicalType: "integer"
+        physicalType: "int"
+        required: true
+        description: "Chave estrangeira referenciando Categoria.CategID."
+        relationships:
+          - type: "foreignKey"
+            to: "Categoria.CategID"
+
+# Autor: Jaime Willian Carneiro da Silva (Matrícula: 23110999)
+
+servers:
+  - server: ambiente_zagi
+    type: postgres
+    environment: dev
+    host: localhost
+    port: 5432
+    database: "ZAGI"
+    schema: "oper_zagi"
