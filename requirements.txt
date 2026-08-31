@@ -1,0 +1,3 @@
+datacontract-cli
+psycopg[binary]
+python-dotenv
