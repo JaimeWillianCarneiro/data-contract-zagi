@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 from pathlib import Path
@@ -26,10 +25,11 @@ CONTRACT_FILE = BASE_DIR / "datacontract.yaml"
 PRODUCT_TABLE = "oper_zagi.Produto"
 SUPPLIER_TABLE = "oper_zagi.Fornecedor"
 CATEGORY_TABLE = "oper_zagi.Categoria"
+CLIENT_TABLE = "oper_zagi.Cliente"
 
 FK_SUPPLIER = "produto_fornid_fkey"
 FK_CATEGORY = "produto_categid_fkey"
-
+UNIQUE_CLIENTE_CPF = "cliente_clientecpf_key"
 
 def get_connection():
     return psycopg.connect(**DB_CONFIG)
@@ -88,6 +88,10 @@ def print_section(title):
     print()
 
 
+# ============================================================
+# LIMPEZA
+# ============================================================
+
 def cleanup_test_data():
     """Remove todos os registros criados pelos cenários."""
 
@@ -101,6 +105,10 @@ def cleanup_test_data():
     execute_sql_string(sql)
 
 
+# ============================================================
+# BASELINE
+# ============================================================
+
 def baseline_test():
     """Testa o banco em estado normal."""
 
@@ -108,6 +116,10 @@ def baseline_test():
 
     return run_datacontract()
 
+
+# ============================================================
+# CENÁRIO 1 - PREÇO
+# ============================================================
 
 def break_price():
     """Cria um produto com preço inválido."""
@@ -125,6 +137,10 @@ def break_price():
 
     return run_datacontract()
 
+
+# ============================================================
+# CENÁRIO 2 - FORNECEDOR
+# ============================================================
 
 def disable_supplier_fk():
     """Remove temporariamente a FK Produto -> Fornecedor."""
@@ -161,23 +177,26 @@ def break_supplier():
 
     disable_supplier_fk()
 
-    execute_sql_string(
-        """
-        INSERT INTO oper_zagi.Produto
-            (ProdID, ProdNome, ProdPreco, FornID, CategID)
-        VALUES
-            (999998, 'Produto com fornecedor inválido', 100.00, 999999, 1);
-        """
-    )
+    try:
+        execute_sql_string(
+            """
+            INSERT INTO oper_zagi.Produto
+                (ProdID, ProdNome, ProdPreco, FornID, CategID)
+            VALUES
+                (999998, 'Produto com fornecedor inválido', 100.00, 999999, 1);
+            """
+        )
 
-    result = run_datacontract()
+        return run_datacontract()
 
-    cleanup_test_data()
+    finally:
+        cleanup_test_data()
+        restore_supplier_fk()
 
-    restore_supplier_fk()
 
-    return result
-
+# ============================================================
+# CENÁRIO 3 - CATEGORIA
+# ============================================================
 
 def disable_category_fk():
     """Remove temporariamente a FK Produto -> Categoria."""
@@ -214,29 +233,159 @@ def break_category():
 
     disable_category_fk()
 
+    try:
+        execute_sql_string(
+            """
+            INSERT INTO oper_zagi.Produto
+                (ProdID, ProdNome, ProdPreco, FornID, CategID)
+            VALUES
+                (999997, 'Produto com categoria inválida', 100.00, 1, 999999);
+            """
+        )
+
+        return run_datacontract()
+
+    finally:
+        cleanup_test_data()
+        restore_category_fk()
+
+
+# ============================================================
+# CENÁRIO 4 - FORMATO DE STRING
+# ============================================================
+
+def break_cpf_format():
+    """
+    Altera temporariamente o CPF de um cliente para um valor
+    que não corresponde ao padrão definido no contrato.
+    """
+
+    print_section("CENÁRIO 4 - CPF COM FORMATO INVÁLIDO")
+
+    original_cpf = "12345678901"
+
     execute_sql_string(
         """
-        INSERT INTO oper_zagi.Produto
-            (ProdID, ProdNome, ProdPreco, FornID, CategID)
-        VALUES
-            (999997, 'Produto com categoria inválida', 100.00, 1, 999999);
+        UPDATE oper_zagi.Cliente
+        SET ClienteCPF = '12345ABC789'
+        WHERE ClienteID = 1;
         """
     )
 
-    result = run_datacontract()
+    try:
+        return run_datacontract()
 
-    cleanup_test_data()
+    finally:
+        execute_sql_string(
+            f"""
+            UPDATE oper_zagi.Cliente
+            SET ClienteCPF = '{original_cpf}'
+            WHERE ClienteID = 1;
+            """
+        )
 
-    restore_category_fk()
 
-    return result
+# ============================================================
+# CENÁRIO 5 - UNICIDADE
+# ============================================================
+def break_cpf_uniqueness():
+    """
+    Remove temporariamente a constraint UNIQUE do CPF,
+    cria dois clientes com o mesmo CPF e verifica se o
+    Data Contract detecta a duplicidade.
+    """
+
+    print_section("CENÁRIO 5 - CPF DUPLICADO")
+
+    original_cpf_cliente_2 = "23456789012"
+
+    # Remove temporariamente a constraint UNIQUE
+    execute_sql_string(
+        f"""
+        ALTER TABLE oper_zagi.Cliente
+        DROP CONSTRAINT IF EXISTS {UNIQUE_CLIENTE_CPF};
+        """
+    )
+
+    try:
+        # Cria a duplicidade
+        execute_sql_string(
+            """
+            UPDATE oper_zagi.Cliente
+            SET ClienteCPF = '12345678901'
+            WHERE ClienteID = 2;
+            """
+        )
+
+        return run_datacontract()
+
+    finally:
+        # Restaura o CPF original
+        execute_sql_string(
+            f"""
+            UPDATE oper_zagi.Cliente
+            SET ClienteCPF = '{original_cpf_cliente_2}'
+            WHERE ClienteID = 2;
+            """
+        )
+
+        # Restaura a constraint UNIQUE
+        execute_sql_string(
+            f"""
+            ALTER TABLE oper_zagi.Cliente
+            ADD CONSTRAINT {UNIQUE_CLIENTE_CPF}
+            UNIQUE (ClienteCPF);
+            """
+        )
+
+
+# ============================================================
+# CENÁRIO 6 - TIPAGEM
+# ============================================================
+
+def break_type():
+    """
+    Altera temporariamente o tipo físico de ClienteCPF,
+    fazendo o banco divergir do tipo declarado no contrato.
+    """
+
+    print_section("CENÁRIO 6 - TIPAGEM INCORRETA")
+
+    execute_sql_string(
+        """
+        ALTER TABLE oper_zagi.Cliente
+        ALTER COLUMN ClienteCPF TYPE TEXT;
+        """
+    )
+
+    try:
+        return run_datacontract()
+
+    finally:
+        execute_sql_string(
+            """
+            ALTER TABLE oper_zagi.Cliente
+            ALTER COLUMN ClienteCPF TYPE VARCHAR(11);
+            """
+        )
+
+
+# ============================================================
+# MAIN
+# ============================================================
 
 def main():
 
-    # Garante que não existem resíduos de execuções anteriores.
+    # --------------------------------------------------------
+    # Limpeza inicial
+    # --------------------------------------------------------
+
     cleanup_test_data()
 
-    # 1. Banco deve estar íntegro.
+    # --------------------------------------------------------
+    # Baseline
+    # --------------------------------------------------------
+
     baseline_result = baseline_test()
 
     if baseline_result != 0:
@@ -252,22 +401,52 @@ def main():
 
         return
 
-    # 2. Quebra de preço.
+    # --------------------------------------------------------
+    # Cenário 1 - Preço
+    # --------------------------------------------------------
+
     cleanup_test_data()
     break_price()
     cleanup_test_data()
 
-    # 3. Quebra de fornecedor.
+    # --------------------------------------------------------
+    # Cenário 2 - Fornecedor
+    # --------------------------------------------------------
+
     cleanup_test_data()
     break_supplier()
     cleanup_test_data()
 
-    # 4. Quebra de categoria.
+    # --------------------------------------------------------
+    # Cenário 3 - Categoria
+    # --------------------------------------------------------
+
     cleanup_test_data()
     break_category()
     cleanup_test_data()
 
-    # Garantia final de integridade.
+    # --------------------------------------------------------
+    # Cenário 4 - Formato de string
+    # --------------------------------------------------------
+
+    break_cpf_format()
+
+    # --------------------------------------------------------
+    # Cenário 5 - Unicidade
+    # --------------------------------------------------------
+
+    break_cpf_uniqueness()
+
+    # --------------------------------------------------------
+    # Cenário 6 - Tipagem
+    # --------------------------------------------------------
+
+    break_type()
+
+    # --------------------------------------------------------
+    # Garantia final
+    # --------------------------------------------------------
+
     cleanup_test_data()
 
     print_section("EXPERIMENTO FINALIZADO")
