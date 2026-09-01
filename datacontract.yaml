@@ -1,292 +1,842 @@
 apiVersion: "v3.1.0"
+
 kind: "DataContract"
+
 id: "example-id"
+
 version: "0.0.1"
+
 status: "draft"
-name: "Example Data Contract"
+
+name: "ZAGI Data Contract"
 
 schema:
-  - id: "tbl_fornecedor"
-    name: "Fornecedor"
-    logicalType: "object"
-    physicalType: "table"
-    physicalName: "Fornecedor"
-    description: "Tabela de domínio que armazena os dados dos parceiros comerciais que fornecem os produtos da ZAGI."
-    tags:
-      - "catalogo"
-      - "parceiros"
 
-    properties:
-      - id: "forn_id_prop"
-        name: "FornID"
-        primaryKey: true
-        businessName: "ID do Fornecedor"
-        logicalType: "integer"
-        physicalType: "int"
-        required: true
-        relationships:
-          - type: "foreignKey"
-            to: "Produto.FornID"
+# =========================================================
 
-      - id: "forn_nome_prop"
-        name: "FornNome"
-        primaryKey: false
-        businessName: "Nome do Fornecedor" #detalhes de semantiva
-        logicalType: "string"
-        physicalType: "varchar(100)"
-        required: true
-        description: "Razão social ou nome fantasia do fornecedor parceiro." # detalhes semânticos
+# FORNECEDOR
 
-  - id: "tbl_categoria"
-    name: "Categoria"
-    logicalType: "object"
-    physicalType: "table"
-    physicalName: "Categoria"
-    description: "Tabela de domínio para classificação macro dos produtos vendidos pela ZAGI."
-    tags:
-      - "catalogo"
-      - "classificacao"
+# =========================================================
 
-    properties:
-      - id: "categ_id_prop"
-        name: "CategID"
-        primaryKey: true
-        primaryKeyPosition: 1
-        businessName: "ID da Categoria"
-        logicalType: "integer"
-        physicalType: "int"
-        required: true
-        description: "Identificador único da categoria."
+- id: "tbl_fornecedor"
 
-      - id: "categ_nome_prop"
-        name: "CategNome"
-        primaryKey: false
-        businessName: "Nome da Categoria"
-        logicalType: "string"
-        physicalType: "varchar(100)"
-        required: true
-        description: "Nomenclatura oficial da categoria (ex. Eletrônicos, Vestuário)."
+  name: "Fornecedor"
 
-  - id: "tbl_produto"
-    name: "Produto"
-    logicalType: "object"
-    physicalType: "table"
-    physicalName: "Produto"
-    description: "Tabela central de catálogo contendo os produtos vendidos pela ZAGI, seus preços e categorização."
-    tags:
-      - "vendas"
-      - "estoque"
-      - "catalogo"
+  logicalType: "object"
 
-    quality:
-      - type: "sql"
-        description: "Produtos não podem ser cadastrados com preço zero ou negativo."
-        query: |
-          SELECT COUNT(*)
-          FROM oper_zagi.Produto
-          WHERE ProdPreco::numeric < 0.01
-        mustBe: 0
+  physicalType: "table"
 
-      - type: "sql"
-        description: "O fornecedor atribuído ao produto deve existir previamente na tabela de fornecedores."
-        query: |
-          SELECT COUNT(*)
-          FROM oper_zagi.Produto p
-          LEFT JOIN oper_zagi.Fornecedor f
-            ON p.FornID = f.FornID
-          WHERE f.FornID IS NULL
-        mustBe: 0
+  physicalName: "Fornecedor"
 
-      - type: "sql"
-        description: "A categoria atribuída ao produto deve existir previamente na tabela de categorias."
-        query: |
-          SELECT COUNT(*)
-          FROM oper_zagi.Produto p
-          LEFT JOIN oper_zagi.Categoria c
-            ON p.CategID = c.CategID
-          WHERE c.CategID IS NULL
-        mustBe: 0
+  description: "Tabela de domínio que armazena os dados dos parceiros comerciais que fornecem os produtos da ZAGI."
 
-    properties:
-      - id: "prod_id_prop"
-        name: "ProdID"
-        primaryKey: true
-        primaryKeyPosition: 1
-        businessName: "ID do Produto"
-        logicalType: "integer"
-        physicalType: "int"
-        required: true
-        description: "Identificador único e sequencial do produto no sistema."
+  tags:
 
-      - id: "prod_nome_prop"
-        name: "ProdNome"
-        primaryKey: false
-        businessName: "Nome do Produto"
-        logicalType: "string"
-        physicalType: "varchar(100)"
-        required: true
-        description: "Nome comercial descritivo do produto apresentado ao cliente final."
+  - "catalogo"
+  - "parceiros"
 
-      - id: "prod_preco_prop"
-        name: "ProdPreco"
-        primaryKey: false
-        businessName: "Preço do Produto"
-        logicalType: "number"
-        physicalType: "money"
-        required: true
-        description: "Preço base de venda do produto, sem aplicação de descontos de PDV."
+  properties:
 
-      - id: "forn_id_prop_fk"
-        name: "FornID"
-        primaryKey: false
-        businessName: "ID do Fornecedor Relacionado"
-        logicalType: "integer"
-        physicalType: "int"
-        required: true
-        description: "Chave estrangeira referenciando Fornecedor.FornID."
+  - id: "forn_id_prop"
 
-      - id: "categ_id_prop_fk"
-        name: "CategID"
-        primaryKey: false
-        businessName: "ID da Categoria Relacionada"
-        logicalType: "integer"
-        physicalType: "int"
-        required: true
-        description: "Chave estrangeira referenciando Categoria.CategID."
-        relationships:
-          - type: "foreignKey"
-            to: "Categoria.CategID"
-      - id: "prod_status_prop"
-        name: "ProdStatus"
-        businessName: "Status do Produto"
-        logicalType: "string"
-        physicalType: "varchar(20)"
-        required: true
-        logicalTypeOptions:
-         # Enum citado 
-          enum:
-            - "ATIVO"
-            - "INATIVO"
-            - "DESCONTINUADO"
+    name: "FornID"
 
+    primaryKey: true
+
+    primaryKeyPosition: 1
+
+    businessName: "ID do Fornecedor"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador único do fornecedor."
+
+  - id: "forn_nome_prop"
+
+    name: "FornNome"
+
+    primaryKey: false
+
+    businessName: "Nome do Fornecedor"
+
+    logicalType: "string"
+
+    physicalType: "varchar(100)"
+
+    required: true
+
+    description: "Razão social ou nome fantasia do fornecedor parceiro."
+
+# =========================================================
+
+# CATEGORIA
+
+# =========================================================
+
+- id: "tbl_categoria"
+
+  name: "Categoria"
+
+  logicalType: "object"
+
+  physicalType: "table"
+
+  physicalName: "Categoria"
+
+  description: "Tabela de domínio para classificação macro dos produtos vendidos pela ZAGI."
+
+  tags:
+
+  - "catalogo"
+  - "classificacao"
+
+  properties:
+
+  - id: "categ_id_prop"
+
+    name: "CategID"
+
+    primaryKey: true
+
+    primaryKeyPosition: 1
+
+    businessName: "ID da Categoria"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador único da categoria."
+
+  - id: "categ_nome_prop"
+
+    name: "CategNome"
+
+    primaryKey: false
+
+    businessName: "Nome da Categoria"
+
+    logicalType: "string"
+
+    physicalType: "varchar(100)"
+
+    required: true
+
+    description: "Nomenclatura oficial da categoria."
+
+# =========================================================
+
+# PRODUTO
+
+# =========================================================
+
+- id: "tbl_produto"
+
+  name: "Produto"
+
+  logicalType: "object"
+
+  physicalType: "table"
+
+  physicalName: "Produto"
+
+  description: "Tabela central de catálogo contendo os produtos vendidos pela ZAGI, seus preços e categorização."
+
+  tags:
+
+  - "vendas"
+  - "estoque"
+  - "catalogo"
+
+  quality:
+  - type: "sql"
+    description: "O preço do produto deve ser maior ou igual a 0,01."
+    query: |
+      SELECT COUNT(*)
+      FROM oper_zagi.Produto
+      WHERE ProdPreco::numeric < 0.01
+    mustBe: 0
+
+  - type: "sql"
+    description: "O fornecedor atribuído ao produto deve existir previamente na tabela de fornecedores."
+    query: |
+      SELECT COUNT(*)
+      FROM oper_zagi.Produto p
+      LEFT JOIN oper_zagi.Fornecedor f
+        ON p.FornID = f.FornID
+      WHERE f.FornID IS NULL
+    mustBe: 0
+
+  - type: "sql"
+    description: "A categoria atribuída ao produto deve existir previamente na tabela de categorias."
+    query: |
+      SELECT COUNT(*)
+      FROM oper_zagi.Produto p
+      LEFT JOIN oper_zagi.Categoria c
+        ON p.CategID = c.CategID
+      WHERE c.CategID IS NULL
+    mustBe: 0
+
+  properties:
+
+  - id: "prod_id_prop"
+
+    name: "ProdID"
+
+    primaryKey: true
+
+    primaryKeyPosition: 1
+
+    businessName: "ID do Produto"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador único do produto."
+
+  - id: "prod_nome_prop"
+
+    name: "ProdNome"
+
+    primaryKey: false
+
+    businessName: "Nome do Produto"
+
+    logicalType: "string"
+
+    physicalType: "varchar(100)"
+
+    required: true
+
+    description: "Nome comercial descritivo do produto."
+
+  - id: "prod_preco_prop"
+
+    name: "ProdPreco"
+
+    primaryKey: false
+
+    businessName: "Preço do Produto"
+
+    logicalType: "number"
+
+    physicalType: "money"
+
+    required: true
+
+    description: "Preço base de venda do produto."
+
+  - id: "forn_id_prop_fk"
+
+    name: "FornID"
+
+    primaryKey: false
+
+    businessName: "ID do Fornecedor Relacionado"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Chave estrangeira referenciando Fornecedor.FornID."
+
+    relationships:
+
+    - type: "foreignKey"
+
+      to: "Fornecedor.FornID"
+
+  - id: "categ_id_prop_fk"
+
+    name: "CategID"
+
+    primaryKey: false
+
+    businessName: "ID da Categoria Relacionada"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Chave estrangeira referenciando Categoria.CategID."
+
+    relationships:
+
+    - type: "foreignKey"
+
+      to: "Categoria.CategID"
+
+# =========================================================
+
+# CLIENTE
+
+# =========================================================
 
 - id: "tbl_cliente"
-    name: "Cliente"
-    logicalType: "object"
-    physicalType: "table"
-    physicalName: "Cliente"
-    description: "Tabela que armazena os dados cadastrais dos clientes da ZAGI."
-    tags:
-      - "clientes"
-      - "cadastro"
-      - "vendas"
 
-    quality:
+  name: "Cliente"
 
-      # ------------------------------
-      # Unicidade do CPF
-      # ------------------------------
+  logicalType: "object"
 
-      - type: "sql"
-        description: "O CPF do cliente deve ser único."
-        query: |
-          SELECT COUNT(*)
-          FROM (
-            SELECT ClienteCPF
-            FROM oper_zagi.Cliente
-            GROUP BY ClienteCPF
-            HAVING COUNT(*) > 1
-          ) duplicados
-        mustBe: 0
+  physicalType: "table"
 
-      # ------------------------------
-      # Formato do CPF
-      # ------------------------------
+  physicalName: "Cliente"
 
-      - type: "sql"
-        description: "O CPF deve possuir exatamente 11 dígitos numéricos."
-        query: |
-          SELECT COUNT(*)
-          FROM oper_zagi.Cliente
-          WHERE ClienteCPF !~ '^[0-9]{11}$'
-        mustBe: 0
+  description: "Tabela que armazena os dados cadastrais dos clientes da ZAGI."
 
-      # ------------------------------
-      # Formato do CEP
-      # ------------------------------
+  tags:
 
-      - type: "sql"
-        description: "O CEP do cliente deve possuir exatamente 8 dígitos numéricos."
-        query: |
-          SELECT COUNT(*)
-          FROM oper_zagi.Cliente
-          WHERE ClienteCEP !~ '^[0-9]{8}$'
-        mustBe: 0
+  - "clientes"
+  - "cadastro"
+  - "vendas"
 
-      # ------------------------------
-      # Tipagem
-      # ------------------------------
+  quality:
 
-      - type: "sql"
-        description: "O ClienteID deve possuir o tipo inteiro."
-        query: |
-          SELECT COUNT(*)
-          FROM information_schema.columns
-          WHERE table_schema = 'oper_zagi'
-            AND table_name = 'cliente'
-            AND column_name = 'clienteid'
-            AND data_type != 'integer'
-        mustBe: 0
+  - type: "sql"
 
-    properties:
+    description: "O CPF do cliente deve ser único."
+    query: |
+      SELECT COUNT(*)
+      FROM (
+        SELECT ClienteCPF
+        FROM oper_zagi.Cliente
+        GROUP BY ClienteCPF
+        HAVING COUNT(*) > 1
+      ) duplicados
+    mustBe: 0
 
-      - id: "cliente_id_prop"
-        name: "ClienteID"
-        primaryKey: true
-        primaryKeyPosition: 1
-        businessName: "ID do Cliente"
-        logicalType: "integer"
-        physicalType: "int"
-        required: true
-        description: "Identificador único do cliente."
+  - type: "sql"
 
-      - id: "cliente_nome_prop"
-        name: "ClienteNome"
-        primaryKey: false
-        businessName: "Nome do Cliente"
-        logicalType: "string"
-        physicalType: "varchar(255)"
-        required: true
-        description: "Nome completo ou razão social do cliente."
+    description: "O CPF deve possuir exatamente 11 dígitos numéricos."
 
-      - id: "cliente_cpf_prop"
-        name: "ClienteCPF"
-        primaryKey: false
-        unique: true
-        businessName: "CPF do Cliente"
-        logicalType: "string"
-        physicalType: "varchar(11)"
-        required: true
-        description: "CPF do cliente, armazenado sem pontuação e contendo exatamente 11 dígitos."
-        logicalTypeOptions:
-          pattern: "^[0-9]{11}$"
+    query: |
 
-      - id: "cliente_cep_prop"
-        name: "ClienteCEP"
-        primaryKey: false
-        businessName: "CEP do Cliente"
-        logicalType: "string"
-        physicalType: "varchar(8)"
-        required: true
-        description: "CEP do endereço do cliente, contendo exatamente 8 dígitos."
-        logicalTypeOptions:
-          pattern: "^[0-9]{8}$"
+      SELECT COUNT(*)
+
+      FROM oper_zagi.Cliente
+
+      WHERE ClienteCPF !~ '^[0-9]{11}$'
+
+    mustBe: 0
+
+  - type: "sql"
+
+    description: "O CEP do cliente deve possuir exatamente 8 dígitos numéricos."
+
+    query: |
+
+      SELECT COUNT(*)
+
+      FROM oper_zagi.Cliente
+
+      WHERE ClienteCEP !~ '^[0-9]{8}$'
+
+    mustBe: 0
+  - type: "sql"
+    description: "O e-mail do cliente deve ser único."
+    query: |
+      SELECT COUNT(*)
+      FROM (
+        SELECT ClienteEmail
+        FROM oper_zagi.Cliente
+        GROUP BY ClienteEmail
+        HAVING COUNT(*) > 1
+      ) duplicados
+    mustBe: 0
+
+  - type: "sql"
+
+    description: "O e-mail do cliente deve possuir formato válido."
+
+    query: |
+
+      SELECT COUNT(*)
+
+      FROM oper_zagi.Cliente
+
+      WHERE ClienteEmail !~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+.[A-Za-z]{2,}$'
+
+    mustBe: 0
+
+  properties:
+
+  - id: "cliente_id_prop"
+
+    name: "ClienteID"
+
+    primaryKey: true
+
+    primaryKeyPosition: 1
+
+    businessName: "ID do Cliente"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador único do cliente."
+
+  - id: "cliente_nome_prop"
+
+    name: "ClienteNome"
+
+    primaryKey: false
+
+    businessName: "Nome do Cliente"
+
+    logicalType: "string"
+
+    physicalType: "varchar(255)"
+
+    required: true
+
+    description: "Nome completo ou razão social do cliente."
+
+  - id: "col_cliente_cpf"
+    name: "ClienteCPF"
+    description: "CPF do cliente."
+    logicalType: "string"
+    physicalType: "varchar(11)"
+    required: true
+    unique: true
+    logicalTypeOptions:
+      pattern: '^[0-9]{11}$'
+  - id: "col_cliente_email"
+    name: "ClienteEmail"
+    description: "E-mail do cliente."
+    logicalType: "string"
+    physicalType: "varchar(255)"
+    required: true
+    unique: true
+    logicalTypeOptions:
+      pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+  - id: "col_cliente_cep"
+    name: "ClienteCEP"
+    description: "CEP do cliente."
+    logicalType: "string"
+    physicalType: "varchar(8)"
+    required: true
+    logicalTypeOptions:
+      pattern: '^[0-9]{8}$'
+
+# =========================================================
+
+# REGIÃO
+
+# =========================================================
+
+- id: "tbl_regiao"
+
+  name: "Regiao"
+
+  logicalType: "object"
+
+  physicalType: "table"
+
+  physicalName: "Regiao"
+
+  description: "Tabela que armazena as regiões utilizadas para classificação geográfica das lojas."
+
+  tags:
+
+  - "geografia"
+  - "lojas"
+
+  properties:
+
+  - id: "regiao_id_prop"
+
+    name: "RegiaoID"
+
+    primaryKey: true
+
+    primaryKeyPosition: 1
+
+    businessName: "ID da Região"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador único da região."
+
+  - id: "regiao_nome_prop"
+
+    name: "RegiaoNome"
+
+    primaryKey: false
+
+    businessName: "Nome da Região"
+
+    logicalType: "string"
+
+    physicalType: "varchar(100)"
+
+    required: true
+
+    description: "Nome da região geográfica."
+
+# =========================================================
+
+# LOJA
+
+# =========================================================
+
+- id: "tbl_loja"
+
+  name: "Loja"
+
+  logicalType: "object"
+
+  physicalType: "table"
+
+  physicalName: "Loja"
+
+  description: "Tabela que armazena as lojas da ZAGI, seus endereços e respectivas regiões."
+
+  tags:
+
+  - "lojas"
+  - "vendas"
+  - "geografia"
+  quality:
+  - type: "sql"
+    description: "A região atribuída à loja deve existir previamente na tabela de regiões."
+    query: |
+      SELECT COUNT(*)
+      FROM oper_zagi.Loja l
+      LEFT JOIN oper_zagi.Regiao r
+        ON l.RegiaoID = r.RegiaoID
+      WHERE r.RegiaoID IS NULL
+    mustBe: 0
   
+  properties:
+
+  - id: "loja_id_prop"
+
+    name: "LojaID"
+
+    primaryKey: true
+
+    primaryKeyPosition: 1
+
+    businessName: "ID da Loja"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador único da loja."
+
+  - id: "loja_endereco_prop"
+
+    name: "LojaEndereco"
+
+    primaryKey: false
+
+    businessName: "Endereço da Loja"
+
+    logicalType: "string"
+
+    physicalType: "varchar(255)"
+
+    required: true
+
+    description: "Endereço completo da loja."
+  - id: "col_loja_cep"
+    name: "LojaCEP"
+    description: "CEP da loja."
+    logicalType: "string"
+    physicalType: "varchar(8)"
+    required: true
+    logicalTypeOptions:
+      pattern: '^[0-9]{8}$'
+
+  - id: "regiao_id_prop_fk"
+    name: "RegiaoID"
+    description: "Identificador da região da loja."
+    logicalType: "integer"
+    physicalType: "integer"
+    required: true
+
+    description: "Chave estrangeira referenciando Regiao.RegiaoID."
+
+    relationships:
+
+    - type: "foreignKey"
+
+      to: "Regiao.RegiaoID"
+
+# =========================================================
+
+# TRANSAÇÃO DE VENDA
+
+# =========================================================
+- id: "tbl_trans_de_venda"
+
+  name: "Trans_de_Venda"
+
+  logicalType: "object"
+
+  physicalType: "table"
+
+  physicalName: "Trans_de_Venda"
+
+  description: "Tabela que registra as transações de venda realizadas pela ZAGI."
+
+  tags:
+
+  - "vendas"
+  - "transacoes"
+
+  quality:
+  - type: "sql"
+    description: "A loja associada à transação deve existir previamente na tabela de lojas."
+    query: |
+      SELECT COUNT(*)
+      FROM oper_zagi.Trans_de_Venda t
+      LEFT JOIN oper_zagi.Loja l
+        ON t.LojaID = l.LojaID
+      WHERE l.LojaID IS NULL
+    mustBe: 0
+
+  - type: "sql"
+    description: "O cliente associado à transação deve existir previamente na tabela de clientes."
+    query: |
+      SELECT COUNT(*)
+      FROM oper_zagi.Trans_de_Venda t
+      LEFT JOIN oper_zagi.Cliente c
+        ON t.ClienteID = c.ClienteID
+      WHERE c.ClienteID IS NULL
+    mustBe: 0
+
+  properties:
+
+  - id: "trn_venda_id_prop"
+
+    name: "TRNVendaID"
+
+    primaryKey: true
+
+    primaryKeyPosition: 1
+
+    businessName: "ID da Venda"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador único da transação de venda."
+
+  - id: "trn_venda_data_prop"
+
+    name: "TRNVendaData"
+
+    primaryKey: false
+
+    businessName: "Data da Venda"
+
+    logicalType: "date"
+
+    physicalType: "date"
+
+    required: true
+
+    description: "Data em que a transação de venda foi realizada."
+
+  - id: "loja_id_venda_fk"
+
+    name: "LojaID"
+
+    primaryKey: false
+
+    businessName: "ID da Loja da Venda"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Chave estrangeira referenciando Loja.LojaID."
+
+    relationships:
+
+    - type: "foreignKey"
+
+      to: "Loja.LojaID"
+
+  - id: "cliente_id_venda_fk"
+
+    name: "ClienteID"
+
+    primaryKey: false
+
+    businessName: "ID do Cliente da Venda"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Chave estrangeira referenciando Cliente.ClienteID."
+
+    relationships:
+
+    - type: "foreignKey"
+
+      to: "Cliente.ClienteID"
+
+# =========================================================
+
+# ITENS DA VENDA
+
+# =========================================================
+
+- id: "tbl_incluido_em"
+
+  name: "Incluido_em"
+
+  logicalType: "object"
+
+  physicalType: "table"
+
+  physicalName: "Incluido_em"
+
+  description: "Tabela associativa que registra os produtos incluídos em cada transação de venda e suas respectivas quantidades."
+
+  tags:
+
+  - "vendas"
+  - "produtos"
+
+  quality:
+  - type: "sql"
+    description: "O produto associado ao item da venda deve existir previamente na tabela de produtos."
+    query: |
+      SELECT COUNT(*)
+      FROM oper_zagi.Incluido_em i
+      LEFT JOIN oper_zagi.Produto p
+        ON i.ProdID = p.ProdID
+      WHERE p.ProdID IS NULL
+    mustBe: 0
+
+  - type: "sql"
+    description: "A transação associada ao item da venda deve existir previamente na tabela de transações."
+    query: |
+      SELECT COUNT(*)
+      FROM oper_zagi.Incluido_em i
+      LEFT JOIN oper_zagi.Trans_de_Venda t
+        ON i.TRNVendaID = t.TRNVendaID
+      WHERE t.TRNVendaID IS NULL
+    mustBe: 0
+
+  properties:
+
+  - id: "qtd_prod_trans_v_prop"
+
+    name: "QTDProdTransV"
+
+    primaryKey: false
+
+    businessName: "Quantidade de Produtos na Venda"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Quantidade de unidades do produto incluídas na transação."
+
+  - id: "incluido_prod_id_prop"
+
+    name: "ProdID"
+
+    primaryKey: true
+
+    primaryKeyPosition: 1
+
+    businessName: "ID do Produto"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador do produto incluído na venda."
+
+    relationships:
+
+    - type: "foreignKey"
+
+      to: "Produto.ProdID"
+
+  - id: "incluido_trn_venda_id_prop"
+
+    name: "TRNVendaID"
+
+    primaryKey: true
+
+    primaryKeyPosition: 2
+
+    businessName: "ID da Venda"
+
+    logicalType: "integer"
+
+    physicalType: "int"
+
+    required: true
+
+    description: "Identificador da transação de venda."
+
+    relationships:
+
+    - type: "foreignKey"
+
+      to: "Trans_de_Venda.TRNVendaID"
+
+# =========================================================
+
+# SERVIDOR
+
+# =========================================================
+
 servers:
-  - server: ambiente_zagi
-    type: postgres
-    environment: dev
-    host: localhost
-    port: 5432
-    database: "ZAGI"
-    schema: "oper_zagi"
+
+- server: ambiente_zagi
+
+  type: postgres
+
+  environment: dev
+
+  host: localhost
+
+  port: 5432
+
+  database: "ZAGI"
+
+  schema: "oper_zagi"

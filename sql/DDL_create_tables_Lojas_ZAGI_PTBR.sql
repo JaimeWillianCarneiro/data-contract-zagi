@@ -1,8 +1,20 @@
---- versão 23/09/2022
-Drop schema if exists oper_zagi cascade;
-create schema oper_zagi;
+----   v 01/09/2026
 
-set search_path=oper_zagi;
+-- isso é um comentário em linha
+
+/* isso é um
+   comentário em bloco
+*/
+
+DROP SCHEMA IF EXISTS oper_zagi CASCADE;
+CREATE SCHEMA oper_zagi;
+
+SET search_path = oper_zagi;
+
+
+-- =========================================================
+-- FORNECEDOR
+-- =========================================================
 
 CREATE TABLE Fornecedor
 (
@@ -11,31 +23,54 @@ CREATE TABLE Fornecedor
   PRIMARY KEY (FornID)
 );
 
+
+-- =========================================================
+-- CLIENTE
+-- =========================================================
+
 CREATE TABLE Cliente
 (
   ClienteID INT NOT NULL,
   ClienteNome VARCHAR(255) NOT NULL,
-  ClienteCEP VARCHAR(8) NOT NULL,
   ClienteCPF VARCHAR(11) NOT NULL,
   ClienteEmail VARCHAR(255) NOT NULL,
+  ClienteCEP VARCHAR(8) NOT NULL,
+
   PRIMARY KEY (ClienteID),
-  UNIQUE (ClienteCPF), 
+  UNIQUE (ClienteCPF),
   UNIQUE (ClienteEmail)
 );
+
+
+-- =========================================================
+-- REGIÃO
+-- =========================================================
 
 CREATE TABLE Regiao
 (
   RegiaoID INT NOT NULL,
   RegiaoNome VARCHAR(100) NOT NULL,
+
   PRIMARY KEY (RegiaoID)
 );
+
+
+-- =========================================================
+-- CATEGORIA
+-- =========================================================
 
 CREATE TABLE Categoria
 (
   CategID INT NOT NULL,
   CategNome VARCHAR(100) NOT NULL,
+
   PRIMARY KEY (CategID)
 );
+
+
+-- =========================================================
+-- PRODUTO
+-- =========================================================
 
 CREATE TABLE Produto
 (
@@ -44,19 +79,38 @@ CREATE TABLE Produto
   ProdPreco money NOT NULL,
   FornID INT NOT NULL,
   CategID INT NOT NULL,
+
   PRIMARY KEY (ProdID),
-  FOREIGN KEY (FornID) REFERENCES Fornecedor(FornID),
-  FOREIGN KEY (CategID) REFERENCES Categoria(CategID)
+
+  FOREIGN KEY (FornID)
+    REFERENCES Fornecedor(FornID),
+
+  FOREIGN KEY (CategID)
+    REFERENCES Categoria(CategID)
 );
+
+
+-- =========================================================
+-- LOJA
+-- =========================================================
 
 CREATE TABLE Loja
 (
   LojaID INT NOT NULL,
+  LojaEndereco VARCHAR(255) NOT NULL,
   LojaCEP VARCHAR(8) NOT NULL,
   RegiaoID INT NOT NULL,
+
   PRIMARY KEY (LojaID),
-  FOREIGN KEY (RegiaoID) REFERENCES Regiao(RegiaoID)
+
+  FOREIGN KEY (RegiaoID)
+    REFERENCES Regiao(RegiaoID)
 );
+
+
+-- =========================================================
+-- TRANSAÇÃO DE VENDA
+-- =========================================================
 
 CREATE TABLE Trans_de_Venda
 (
@@ -64,17 +118,32 @@ CREATE TABLE Trans_de_Venda
   TRNVendaData DATE NOT NULL,
   LojaID INT NOT NULL,
   ClienteID INT NOT NULL,
+
   PRIMARY KEY (TRNVendaID),
-  FOREIGN KEY (LojaID) REFERENCES Loja(LojaID),
-  FOREIGN KEY (ClienteID) REFERENCES Cliente(ClienteID)
+
+  FOREIGN KEY (LojaID)
+    REFERENCES Loja(LojaID),
+
+  FOREIGN KEY (ClienteID)
+    REFERENCES Cliente(ClienteID)
 );
+
+
+-- =========================================================
+-- ITENS DA VENDA
+-- =========================================================
 
 CREATE TABLE Incluido_em
 (
   QTDProdTransV INT NOT NULL,
   ProdID INT NOT NULL,
   TRNVendaID INT NOT NULL,
+
   PRIMARY KEY (ProdID, TRNVendaID),
-  FOREIGN KEY (ProdID) REFERENCES Produto(ProdID),
-  FOREIGN KEY (TRNVendaID) REFERENCES Trans_de_Venda(TRNVendaID)
+
+  FOREIGN KEY (ProdID)
+    REFERENCES Produto(ProdID),
+
+  FOREIGN KEY (TRNVendaID)
+    REFERENCES Trans_de_Venda(TRNVendaID)
 );
