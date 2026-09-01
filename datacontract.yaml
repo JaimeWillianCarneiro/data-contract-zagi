@@ -163,13 +163,125 @@ schema:
         physicalType: "varchar(20)"
         required: true
         logicalTypeOptions:
+         # Enum citado 
           enum:
             - "ATIVO"
             - "INATIVO"
             - "DESCONTINUADO"
 
-# Autor: Jaime Willian Carneiro da Silva (Matrícula: 23110999)
 
+- id: "tbl_cliente"
+    name: "Cliente"
+    logicalType: "object"
+    physicalType: "table"
+    physicalName: "Cliente"
+    description: "Tabela que armazena os dados cadastrais dos clientes da ZAGI."
+    tags:
+      - "clientes"
+      - "cadastro"
+      - "vendas"
+
+    quality:
+
+      # ------------------------------
+      # Unicidade do CPF
+      # ------------------------------
+
+      - type: "sql"
+        description: "O CPF do cliente deve ser único."
+        query: |
+          SELECT COUNT(*)
+          FROM (
+            SELECT ClienteCPF
+            FROM oper_zagi.Cliente
+            GROUP BY ClienteCPF
+            HAVING COUNT(*) > 1
+          ) duplicados
+        mustBe: 0
+
+      # ------------------------------
+      # Formato do CPF
+      # ------------------------------
+
+      - type: "sql"
+        description: "O CPF deve possuir exatamente 11 dígitos numéricos."
+        query: |
+          SELECT COUNT(*)
+          FROM oper_zagi.Cliente
+          WHERE ClienteCPF !~ '^[0-9]{11}$'
+        mustBe: 0
+
+      # ------------------------------
+      # Formato do CEP
+      # ------------------------------
+
+      - type: "sql"
+        description: "O CEP do cliente deve possuir exatamente 8 dígitos numéricos."
+        query: |
+          SELECT COUNT(*)
+          FROM oper_zagi.Cliente
+          WHERE ClienteCEP !~ '^[0-9]{8}$'
+        mustBe: 0
+
+      # ------------------------------
+      # Tipagem
+      # ------------------------------
+
+      - type: "sql"
+        description: "O ClienteID deve possuir o tipo inteiro."
+        query: |
+          SELECT COUNT(*)
+          FROM information_schema.columns
+          WHERE table_schema = 'oper_zagi'
+            AND table_name = 'cliente'
+            AND column_name = 'clienteid'
+            AND data_type != 'integer'
+        mustBe: 0
+
+    properties:
+
+      - id: "cliente_id_prop"
+        name: "ClienteID"
+        primaryKey: true
+        primaryKeyPosition: 1
+        businessName: "ID do Cliente"
+        logicalType: "integer"
+        physicalType: "int"
+        required: true
+        description: "Identificador único do cliente."
+
+      - id: "cliente_nome_prop"
+        name: "ClienteNome"
+        primaryKey: false
+        businessName: "Nome do Cliente"
+        logicalType: "string"
+        physicalType: "varchar(255)"
+        required: true
+        description: "Nome completo ou razão social do cliente."
+
+      - id: "cliente_cpf_prop"
+        name: "ClienteCPF"
+        primaryKey: false
+        unique: true
+        businessName: "CPF do Cliente"
+        logicalType: "string"
+        physicalType: "varchar(11)"
+        required: true
+        description: "CPF do cliente, armazenado sem pontuação e contendo exatamente 11 dígitos."
+        logicalTypeOptions:
+          pattern: "^[0-9]{11}$"
+
+      - id: "cliente_cep_prop"
+        name: "ClienteCEP"
+        primaryKey: false
+        businessName: "CEP do Cliente"
+        logicalType: "string"
+        physicalType: "varchar(8)"
+        required: true
+        description: "CEP do endereço do cliente, contendo exatamente 8 dígitos."
+        logicalTypeOptions:
+          pattern: "^[0-9]{8}$"
+  
 servers:
   - server: ambiente_zagi
     type: postgres

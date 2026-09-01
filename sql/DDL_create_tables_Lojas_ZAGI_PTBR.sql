@@ -16,7 +16,11 @@ CREATE TABLE Cliente
   ClienteID INT NOT NULL,
   ClienteNome VARCHAR(255) NOT NULL,
   ClienteCEP VARCHAR(8) NOT NULL,
-  PRIMARY KEY (ClienteID)
+  ClienteCPF VARCHAR(11) NOT NULL,
+  ClienteEmail VARCHAR(255) NOT NULL,
+  PRIMARY KEY (ClienteID),
+  UNIQUE (ClienteCPF), 
+  UNIQUE (ClienteEmail)
 );
 
 CREATE TABLE Regiao
