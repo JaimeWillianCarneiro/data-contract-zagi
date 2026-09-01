@@ -31,11 +31,11 @@ schema:
       - id: "forn_nome_prop"
         name: "FornNome"
         primaryKey: false
-        businessName: "Nome do Fornecedor"
+        businessName: "Nome do Fornecedor" #detalhes de semantiva
         logicalType: "string"
         physicalType: "varchar(100)"
         required: true
-        description: "Razão social ou nome fantasia do fornecedor parceiro."
+        description: "Razão social ou nome fantasia do fornecedor parceiro." # detalhes semânticos
 
   - id: "tbl_categoria"
     name: "Categoria"
@@ -156,6 +156,17 @@ schema:
         relationships:
           - type: "foreignKey"
             to: "Categoria.CategID"
+      - id: "prod_status_prop"
+        name: "ProdStatus"
+        businessName: "Status do Produto"
+        logicalType: "string"
+        physicalType: "varchar(20)"
+        required: true
+        logicalTypeOptions:
+          enum:
+            - "ATIVO"
+            - "INATIVO"
+            - "DESCONTINUADO"
 
 # Autor: Jaime Willian Carneiro da Silva (Matrícula: 23110999)
 
