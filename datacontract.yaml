@@ -10,12 +10,33 @@ status: "draft"
 
 name: "ZAGI Data Contract"
 
+description:
+  purpose: "Disponibilizar dados operacionais de lojas, produtos, clientes e transações de venda da ZAGI para análise e integração."
+  limitations: "Os dados devem ser utilizados exclusivamente para fins acadêmicos, analíticos e operacionais relacionados ao projeto ZAGI. Dados pessoais, como CPF e e-mail, não devem ser redistribuídos ou utilizados para finalidades não autorizadas."
+  usage: "O consumidor deve utilizar os dados de acordo com este contrato, respeitando as regras de qualidade, segurança e finalidade estabelecidas."
+
+slaProperties:
+  - property: availability
+    value: 99.9%
+    description: "Garantia de disponibilidade da plataforma de dados."
+  - property: retention
+    value: 1
+    unit: year
+    description: "Os dados serão mantidos por 1 ano, após o qual poderão ser excluídos conforme a política de retenção."
+  - property: freshness
+    value: 24
+    unit: hours
+    element: Trans_de_Venda.TRNVendaData
+    description: "Os dados de transações devem estar disponíveis em até 24 horas após o registro da venda."
+  - property: support
+    value: business hours
+    description: "O suporte será prestado somente durante o horário comercial."
+
 schema:
 
 # =========================================================
 
 # FORNECEDOR
-
 # =========================================================
 
 - id: "tbl_fornecedor"
