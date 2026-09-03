@@ -525,19 +525,12 @@ datacontract test datacontract.yaml --server ambiente_zagi
 python main.py
 ```
 
-## Segurança
 
-**Não faça commit de credenciais.**
+## Autores
 
-O arquivo `.env` está incluído no `.gitignore` e não deve ser enviado ao GitHub.
-
-Caso credenciais tenham sido expostas publicamente, elas devem ser alteradas imediatamente.
-
-## Autor
-
-Bruno Ferreira Salvi
-Elisa de Oliveira Soares
-Gabrielle Scherer Mascarelo
-Jaime Willian Carneiro da Silva
-Luiz Eduardo Bravin
-Ximena Beatriz Gomez Flores
+* Bruno Ferreira Salvi
+* Elisa de Oliveira Soares
+* Gabrielle Scherer Mascarelo
+* Jaime Willian Carneiro da Silva
+* Luiz Eduardo Bravin
+* Ximena Beatriz Gomez Flores
