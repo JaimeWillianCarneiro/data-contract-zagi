@@ -56,6 +56,39 @@ def execute_sql_string(sql):
 
         conn.commit()
 
+def compatible_schema_change_test():
+    print_section("CENÁRIO 7: MUDANÇA DE SCHEMA COMPATÍVEL")
+
+    try:
+        print("Adicionando uma nova coluna opcional em Produto...")
+
+        execute_sql_string(
+            """
+            ALTER TABLE oper_zagi.Produto
+            ADD COLUMN IF NOT EXISTS ProdDescricao VARCHAR(255);
+            """
+        )
+
+        print("\nExecutando Data Contract...")
+        result = run_datacontract()
+
+        if result == 0:
+            print("\n🟢 Mudança de schema compatível: contrato continua válido.")
+        else:
+            print("\n🔴 A mudança de schema foi considerada incompatível.")
+
+        return result
+
+    finally:
+        print("\nDesfazendo alteração...")
+
+        execute_sql_string(
+            """
+            ALTER TABLE oper_zagi.Produto
+            DROP COLUMN IF EXISTS ProdDescricao;
+            """
+        )
+
 def ensure_freshness():
     """
     Garante que exista uma transação recente o suficiente para
@@ -486,6 +519,13 @@ def main():
 
     break_type()
 
+
+
+    # --------------------------------------------------------
+    # Cenário 7 - Adicionando atributo opcional
+    # --------------------------------------------------------
+
+    compatible_schema_change_test()
     # --------------------------------------------------------
     # Garantia final
     # --------------------------------------------------------
