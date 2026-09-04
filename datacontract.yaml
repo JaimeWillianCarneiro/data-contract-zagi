@@ -14,7 +14,29 @@ description:
   purpose: "Disponibilizar dados operacionais de lojas, produtos, clientes e transações de venda da ZAGI para análise e integração."
   limitations: "Os dados devem ser utilizados exclusivamente para fins acadêmicos, analíticos e operacionais relacionados ao projeto ZAGI. Dados pessoais, como CPF e e-mail, não devem ser redistribuídos ou utilizados para finalidades não autorizadas."
   usage: "O consumidor deve utilizar os dados de acordo com este contrato, respeitando as regras de qualidade, segurança e finalidade estabelecidas."
-
+team:
+  name: ZAGI
+  description: "Equipe responsável pelo Data Contract do projeto ZAGI."
+  members:
+    - username: bruno.ferreira.salvi
+      name: "Bruno Ferreira Salvi"
+      role: Member
+    - username: elisa.de.oliveira.soares
+      name: "Elisa de Oliveira Soares"
+      role: Member
+    - username: gabrielle.scherer.mascarelo
+      name: "Gabrielle Scherer Mascarelo"
+      role: Member
+    - username: jaime.willian.carneiro.da.silva
+      name: "Jaime Willian Carneiro da Silva"
+      role: Member
+    - username: luiz.eduardo.bravin
+      name: "Luiz Eduardo Bravin"
+      role: Member
+    - username: ximena.beatriz.gomez.flores
+      name: "Ximena Beatriz Gomez Flores"
+      role: Member
+      
 slaProperties:
   - property: availability
     value: 99.9%

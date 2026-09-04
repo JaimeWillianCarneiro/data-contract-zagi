@@ -56,6 +56,49 @@ def execute_sql_string(sql):
 
         conn.commit()
 
+def ensure_freshness():
+    """
+    Garante que exista uma transação recente o suficiente para
+    satisfazer a SLA de freshness de 24 horas.
+    """
+
+    print_section("VERIFICANDO SLA DE FRESHNESS")
+
+    with get_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT
+                    MAX(TRNVendaData),
+                    CURRENT_DATE,
+                    CURRENT_DATE - MAX(TRNVendaData)
+                FROM oper_zagi.Trans_de_Venda;
+                """
+            )
+
+            ultima_venda, data_atual, diferenca = cursor.fetchone()
+
+    print(f"Última venda: {ultima_venda}")
+    print(f"Data atual:   {data_atual}")
+    print(f"Diferença:    {diferenca} dia(s)")
+
+    if ultima_venda is None or diferenca >= 1:
+        print("\nFreshness fora do limite. Atualizando a venda mais recente...")
+
+        execute_sql_string(
+            """
+            UPDATE oper_zagi.Trans_de_Venda
+            SET TRNVendaData = CURRENT_DATE
+            WHERE TRNVendaID = (
+                SELECT TRNVendaID
+                FROM oper_zagi.Trans_de_Venda
+                ORDER BY TRNVendaData DESC
+                LIMIT 1
+            );
+            """
+        )
+
+        print("SLA de freshness preparada para o teste.")
 
 def run_datacontract():
     """Executa o teste do Data Contract."""
@@ -385,7 +428,7 @@ def main():
     # --------------------------------------------------------
     # Baseline
     # --------------------------------------------------------
-
+    ensure_freshness()
     baseline_result = baseline_test()
 
     if baseline_result != 0:
